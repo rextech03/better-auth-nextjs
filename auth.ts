@@ -4,6 +4,11 @@ import prisma from "@/lib/prisma";
 import { sendEmail } from "@/actions/email";
 import { openAPI } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
+import Stripe from "stripe";
+import { stripe } from "@better-auth/stripe"
+import { Plan, plans } from "./constants/plans";
+
+const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 
 export const auth = betterAuth({
@@ -16,15 +21,15 @@ export const auth = betterAuth({
     // As a workaround, set updateAge to a large value for now.
     updateAge: 60 * 60 * 24 * 7, // 7 days (every 7 days the session expiration is updated)
     cookieCache: {
-      enabled: true,
+      enabled: false,
       maxAge: 5 * 60 // Cache duration in seconds
     }
   },
   user: {
     additionalFields: {
-      premium: {
+      trialAllowed: {
         type: "boolean",
-        required: false,
+        required: true,
       },
     },
     changeEmail: {
@@ -44,18 +49,61 @@ export const auth = betterAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     },
   },
-  plugins: [openAPI(), admin({
-    impersonationSessionDuration: 60 * 60 * 24 * 7, // 7 days
-  })], // api/auth/reference
+  plugins: [
+    openAPI(),
+    admin({
+      impersonationSessionDuration: 60 * 60 * 24 * 7, // 7 days
+    }),
+    stripe({
+      stripeClient,
+      stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
+      createCustomerOnSignUp: true,
+      subscription: {
+        enabled: true,
+        plans: plans,
+        getCheckoutSessionParams: async ({ user, plan }) => {
+
+          const checkoutSession: {
+            params: {
+              subscription_data?: {
+                trial_period_days: number
+              }
+            }
+          } = {
+            params: {},
+          }
+
+          if (user.trialAllowed) {
+            checkoutSession.params.subscription_data = {
+              trial_period_days: (plan as Plan).trialDays
+            }
+          }
+
+          return checkoutSession;
+        },
+        onSubscriptionComplete: async ({ event }) => {
+          const eventDataObject = event.data.object as Stripe.Checkout.Session;
+          const userId = eventDataObject.metadata?.userId;
+
+          console.log("Setting trialAllowed to false.");
+          await prisma.user.update({
+            where: { id: userId },
+            data: { trialAllowed: false }
+          })
+        },
+      }
+    })
+  ], // api/auth/reference
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
-      await sendEmail({
-        to: user.email,
-        subject: "Reset your password",
-        text: `Click the link to reset your password: ${url}`,
-      });
+      console.log("Url for resetting the password: ", url);
+      // await sendEmail({
+      //   to: user.email,
+      //   subject: "Reset your password",
+      //   text: `Click the link to reset your password: ${url}`,
+      // });
     },
   },
   emailVerification: {
@@ -63,6 +111,7 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, token }) => {
       const verificationUrl = `${process.env.BETTER_AUTH_URL}/api/auth/verify-email?token=${token}&callbackURL=${process.env.EMAIL_VERIFICATION_CALLBACK_URL}`;
+      console.log("Verification url to verify the email: ", verificationUrl);
       await sendEmail({
         to: user.email,
         subject: "Verify your email address",

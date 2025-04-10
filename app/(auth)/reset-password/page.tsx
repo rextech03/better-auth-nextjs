@@ -26,6 +26,7 @@ function ResetPasswordContent() {
 	const { toast } = useToast();
 	const searchParams = useSearchParams();
 	const error = searchParams.get("error");
+	const token = searchParams.get("token");
 	const [isPending, setIsPending] = useState(false);
 
 	const form = useForm<z.infer<typeof resetPasswordSchema>>({
@@ -37,9 +38,19 @@ function ResetPasswordContent() {
 	});
 
 	const onSubmit = async (data: z.infer<typeof resetPasswordSchema>) => {
+		if (!token) {
+			toast({
+				title: "Error",
+				description: "Token is required!",
+				variant: "destructive",
+			});
+			return;
+		}
+
 		setIsPending(true);
 		const { error } = await authClient.resetPassword({
 			newPassword: data.password,
+			token,
 		});
 		if (error) {
 			toast({

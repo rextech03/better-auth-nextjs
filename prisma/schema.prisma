@@ -14,20 +14,21 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid()) @map("_id")
-  name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
-  image         String?
-  premium       Boolean   @default(false)
-  role          String    @default("user")
-  banned        Boolean   @default(false)
-  banReason     String?
-  banExpires    Int? /// Unix timestamp for ban expiration
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+  id               String    @id @default(cuid()) @map("_id")
+  name             String
+  email            String    @unique
+  emailVerified    Boolean   @default(false)
+  stripeCustomerId String?
+  image            String?
+  trialAllowed     Boolean   @default(true)
+  role             String    @default("user")
+  banned           Boolean   @default(false)
+  banReason        String?
+  banExpires       Int? /// Unix timestamp for ban expiration
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  sessions         Session[]
+  accounts         Account[]
 }
 
 model Session {
@@ -68,4 +69,19 @@ model Verification {
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model Subscription {
+  id                   String    @id @default(cuid()) @map("_id")
+  plan                 String
+  referenceId          String
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  status               String
+  periodStart          DateTime?
+  periodEnd            DateTime?
+  cancelAtPeriodEnd    Boolean?
+  seats                Int?
+  trialStart           DateTime?
+  trialEnd             DateTime?
 }
