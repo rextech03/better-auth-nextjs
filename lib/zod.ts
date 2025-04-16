@@ -15,6 +15,16 @@ const getNameSchema = () =>
     .min(1, "Name is required")
     .max(50, "Name must be less than 50 characters");
 
+const getDescriptionSchema = () =>
+  string({ required_error: "Description is required" })
+    .min(20, "Description is required")
+    .max(500, "Description must be less than 50 characters");
+
+const getInputSchema = (type: "logo" | "link" | "userId" | "stage" ) =>
+  string({ required_error: `${type} is required` })
+    .min(8, `${type} must be atleast 8 characters`)
+    .max(50, `${type} can not exceed 50 characters`);
+
 export const signUpSchema = object({
   name: getNameSchema(),
   email: getEmailSchema(),
@@ -43,3 +53,13 @@ export const resetPasswordSchema = object({
     message: "Passwords don't match",
     path: ["confirmPassword"],
   });
+
+ 
+export const addProjectSchema = object({
+  name: getNameSchema(),
+  description: getDescriptionSchema(),
+  logo: getInputSchema("logo"),
+  stage: getInputSchema("stage"),
+  link: getInputSchema("link"),
+  userId: getInputSchema("userId"),
+})

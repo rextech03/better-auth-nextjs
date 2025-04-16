@@ -6,10 +6,11 @@
 
 generator client {
   provider = "prisma-client-js"
+  generator = "/generator"
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -28,6 +29,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  products      Product[]
 }
 
 model Session {
@@ -68,4 +70,35 @@ model Verification {
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+
+model Product {
+  id String @id @default(cuid()) @map("_id")
+  name String
+  logo String?
+  description String
+  stage Process     @default(PRELAUNCH)
+  link String?
+  userId  String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prelaunchcampaign   Prelaunch[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Prelaunch {
+  id String @id @default(cuid()) @map("_id")
+  phone String?
+  email String?
+  productId  String
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+enum Process {
+  PRELAUNCH
+  LAUNCH
+  POSTLAUNCH
 }
