@@ -19,7 +19,6 @@ import { Input } from "@/components/ui/input"
 import { addProjectSchema } from "@/lib/zod"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "./ui/select"
 import { Textarea } from "./ui/textarea"
-import axios from "axios"
 
 
 // const FormSchema = z.object({
@@ -186,7 +185,7 @@ export  function CreateProductForm({props}: {props: {userId: string | undefined}
         <FormField
           control={form.control}
           name="userId"
-          render={({ field }) => (
+          render={() => (
             <FormItem>
               {/* <FormLabel>Product Link (Link to playstore, if it is an app)</FormLabel> */}
               <FormControl>

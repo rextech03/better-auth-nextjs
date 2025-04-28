@@ -88,7 +88,7 @@ export const PUT = async (req: Request) => {
                 msg: 'Invalid input data'
             }, { status: 400 });
         }
-        const author = await prisma.author.update({
+        const author = await prisma.product.update({
             where: { id: String(id) },
             data: { name }
         });
@@ -107,18 +107,18 @@ export const PUT = async (req: Request) => {
 export const DELETE = async (req: Request) => {
     try {
         const { id } = await req.json();
-await prisma.book.deleteMany({
-            where: { authorId: Number(id) }
-        });
-        const author = await prisma.author.delete({
-            where: { id: Number(id) }
+// await prisma.product.deleteMany({
+//             where: { userId: id }
+//         });
+        await prisma.product.delete({
+            where: { id: id }
         });
         return NextResponse.json({
-            msg: `The author with id ${id} and all related books have been deleted`
+            msg: `The product with has been deleted`
         });
     } catch (error: any) {
         return NextResponse.json({
-            msg: 'Failed to delete the author',
+            msg: 'Failed to delete the product',
             error: error.message
         }, { status: 500 });
     }
@@ -129,7 +129,7 @@ await prisma.book.deleteMany({
 //     try {
         
 //         const urlParts = req.url.split('/');
-//         const id = Number(urlParts[5]);
+//         const id = urlParts[5]);
 // if (isNaN(id)) {
 //             return NextResponse.json({
 //                 msg: 'Invalid author ID'

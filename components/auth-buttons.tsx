@@ -21,7 +21,11 @@ export default function AuthButtons() {
 			</Link>
 		</div>
 	) : (
-		<div className="flex items-center gap-2">
+		<div className="flex items-end gap-2">
+			{/* <p className="text-md block">{session.user?.name}</p> */}
+			<Link href="/dashboard" className="text-md text-gray-500 hover:underline hover:text-black">
+				Dashboard
+			</Link>
 			<SignoutButton />
 		</div>
 	);

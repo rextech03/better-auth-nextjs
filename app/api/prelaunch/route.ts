@@ -24,7 +24,7 @@ export const POST = async (req: Request) => {
         const { productId, phone, email } = await req.json();
        
         
-        const productsPrelaunch = await prisma.product.create({
+        const productsPrelaunch = await prisma.prelaunch.create({
             data: {
                 productId,
                 phone,
@@ -55,10 +55,10 @@ export const PUT = async (req: Request) => {
         }
         const author = await prisma.prelaunch.update({
             where: { id: String(id) },
-            data: { name }
+            data: { email }
         });
         return NextResponse.json({
-            msg: `The updated product name is ${author.name}`
+            msg: `The updated product name is ${author.email}`
         });
     } catch (error: any) {
         return NextResponse.json({
@@ -75,7 +75,7 @@ export const DELETE = async (req: Request) => {
 await prisma.prelaunch.deleteMany({
             where: { id: id }
         });
-        const author = await prisma.prelaunch.delete({
+         await prisma.prelaunch.delete({
             where: { id: id }
         });
         return NextResponse.json({
